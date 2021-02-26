@@ -31,6 +31,7 @@
   var udid="{{ html .udid }}";
   var clickWid={{ html .clickWidth }};
   var clickHeg={{ html .clickHeight }};
+  var myTarget='';
   function req( type, url, handler, body ) {
     var xhr = new XMLHttpRequest();
     xhr.open( type, url, true );
@@ -72,8 +73,9 @@
     home.onclick = function( event ) {
       req( 'POST', '/devHome', function() {}, { udid } );  
     }
-    
+
     canvas.onmousedown = function( event ) {
+      myTarget = event.target;
       pos1 = getCursorPosition( canvas, event );
     }
     
@@ -86,7 +88,7 @@
       }
       else clickAt( pos1 );
     }
-    
+
     var wsprot = ( document.location.protocol == 'https:' ) ? "wss" : "ws"; 
     var url = wsprot+":\/\/"+document.location.host+"\/imgStream?udid={{ html .udid }}";
     ws = new WebSocket( url );
@@ -121,6 +123,19 @@
         console.log( "Error: ", event.data );
     }
   });
+
+  window.onload = function() {
+    var canvas = getel("canvas");
+    document.addEventListener('keydown', function(event) {
+      if(myTarget == canvas) {
+         console.log('event!');
+         console.log(event.key);
+         var key = event.key;
+         var base = document.location.protocol + '//' + document.location.host;
+         req( 'POST', base + '/devKeyPress', function() {}, { udid, key } ); 
+      }
+   }, false);
+  }
 </script>
 </head>
 
